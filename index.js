@@ -77,7 +77,7 @@ module.exports = function(options){
          * @author                m.
          * @param   { String }    region        Specify an region (BR1, EUN1, EUW1, JP1, KR, LA1, LA2, NA1, OC1, PBE1, RU, TR1) to search for.
          * 
-         * @returns { String }
+         * @returns { Object }
          */
         championRotations: async (region) => {
             let url = `https://${region}.api.riotgames.com/lol/platform/v3/champion-rotations?api_key=${this.apiKey}`;
@@ -89,4 +89,23 @@ module.exports = function(options){
             return res;
         }
     }
-}//https://eun1.api.riotgames.com/lol/platform/v3/champion-rotations?api_key=RGAPI-78371f68-654c-4d5e-8ab8-de498082c0df
+    this.valorant = {
+        /**
+         * @name                  getContent
+         * @category              Valorant
+         * @description           Returns an Object with all API info about VALORANT assets.
+         * @author                m.
+         * 
+         * @returns { Object }
+         */
+        getContent: async () => {
+            let url = `https://eu.api.riotgames.com/val/content/v1/contents?api_key=${this.apiKey}`;
+            const res = await axios.get(url).then((response) => {
+                return response.data;
+            }).catch((err) => {
+                return err.data;
+            })
+            return res;
+        }
+    }
+}
