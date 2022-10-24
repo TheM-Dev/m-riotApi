@@ -4,8 +4,7 @@ Simple scraper for easier access to the Riot APIdata.
 ### Functions:
 - League of Legends:
     - regionStatus(REGION) - Returns an Object with maintenance and incident reports for providen platform.
-        **Response:**
-        ```js
+        Example response: ```js
         {
             maintenanceReports: [],
             incidentReports: [
@@ -20,7 +19,6 @@ Simple scraper for easier access to the Riot APIdata.
         }
         ```
     - getPuuid(GAMENAME, TAGLINE, REGION) - Returns an String with PUUID of providen player.
-        **Response:**
-        ```
+        Example response: ```
             c70O0s54T9o3rHZV4eCGg-BHAZE7ZoS98djsd7hWu8bEY7W7_uMKV2Cf-j4eHCAQezYApm5NnAl4og
         ```
