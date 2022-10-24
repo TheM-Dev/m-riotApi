@@ -24,3 +24,40 @@ Simple scraper for easier access to the Riot APIdata.
         ```
             c70O0s54T9o3rHZV4eCGg-BHAZE7ZoS98djsd7hWu8bEY7W7_uMKV2Cf-j4eHCAQezYApm5NnAl4og
         ```
+    - championRotations(REGION) - Returns an Object with info about champions rotations.
+        Example response:
+        ```js
+        {
+            "freeChampionIds": [
+                3,
+                27,
+                30,
+                35,
+                37,
+                54,
+                89,
+                110,
+                111,
+                127,
+                154,
+                221,
+                240,
+                245,
+                420,
+                555
+            ],
+            "freeChampionIdsForNewPlayers": [
+                222,
+                254,
+                427,
+                82,
+                131,
+                147,
+                54,
+                17,
+                18,
+                37
+            ],
+            "maxNewPlayerLevel": 10
+        }
+        ```
