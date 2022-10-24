@@ -1,6 +1,6 @@
 {
   "name": "@__mdev/m-riotapi",
-  "version": "1.0.2",
+  "version": "1.0.3",
   "description": "Simple scraper for easier access to the Riot API data.",
   "main": "index.js",
   "scripts": {
