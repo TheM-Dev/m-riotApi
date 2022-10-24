@@ -1,5 +1,5 @@
 # m-riotApi
-Simple scraper for easier access to the Riot APIdata.
+Simple scraper for easier access to the Riot API data.
 
 ### Functions:
 - League of Legends:
