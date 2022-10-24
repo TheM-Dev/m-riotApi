@@ -61,3 +61,31 @@ Simple scraper for easier access to the Riot API data.
             "maxNewPlayerLevel": 10
         }
         ```
+- VALORANT:
+    - getContent() - Returns an Object with all API info about VALORANT assets.
+        Example response: 
+        ```js
+        {
+            "version": "release-05.08",
+            "characters": [
+                {
+                    "name": "Fade",
+                    "localizedNames": {
+                        "ar-AE": "فايد",
+                        "de-DE": "Fade",
+                        "en-US": "Fade",
+                        "es-ES": "Fade",
+                        "es-MX": "Fade",
+                        "fr-FR": "Fade",
+                        "id-ID": "Fade",
+                        "it-IT": "Fade",
+                        "ja-JP": "フェイド",
+                        "ko-KR": "페이드",
+                        "pl-PL": "Fade",
+                        "pt-BR": "Fade",
+                        "ru-RU": "Fade",
+                    ...
+                }
+            ...]
+        }
+        ```
