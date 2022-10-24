@@ -19,3 +19,8 @@ Simple scraper for easier access to the Riot APIdata.
             ]
         }
         ```
+    - getPuuid(GAMENAME, TAGLINE, REGION) - Returns an String with PUUID of providen player.
+        **Response:**
+        ```js
+            c70O0s54T9o3rHZV4eCGg-BHAZE7ZoS98djsd7hWu8bEY7W7_uMKV2Cf-j4eHCAQezYApm5NnAl4og
+        ```

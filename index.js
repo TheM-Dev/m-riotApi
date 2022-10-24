@@ -1,7 +1,6 @@
 const translate = require('./translateRegion');
 const axios = require('axios');
 module.exports = function(options){
-    this.baseUri = (region) => { return `https://${region.toLowerCase()}.api.riotgames.com/` };
     this.apiKey = options.apiKey;
     this.lol = {
         /**
@@ -14,7 +13,7 @@ module.exports = function(options){
          * @returns { Object }
          */
         platformStatus: async region => {
-            let url = `${this.baseUri(region)}lol/status/v4/platform-data?api_key=${this.apiKey}`;
+            let url = `https://${region.toLowerCase()}.api.riotgames.com/lol/status/v4/platform-data?api_key=${this.apiKey}`;
             const res = await axios.get(url).then((response) => {
                 let incidents = response.data.incidents;
                 let maintenances = response.data.maintenances;
@@ -46,9 +45,30 @@ module.exports = function(options){
                 });
                 return { maintenanceReports, incidentReports };
             }).catch((err) => {
-                return err;
+                return err.data;
+            })
+            return res;
+        },
+        /**
+         * @name                  getPuuid
+         * @category              League of Legends
+         * @description           Returns an String with PUUID of providen player.
+         * @author                m.
+         * @param   { String }    gameName      Specify Player Name (the part before hash).
+         * @param   { String }    tagLine       Specify Player Tag (the part after hash).
+         * @param   { String }    region        Specify an region (europe, americas, esports, asia) to search for.
+         * 
+         * @returns { String }
+         */
+        getPuuid: async (gameName, tagLine, region) => {
+            let url = `https://${region}.api.riotgames.com/riot/account/v1/accounts/by-riot-id/${gameName}/${tagLine}?api_key=${this.apiKey}`;
+            const res = await axios.get(url).then((response) => {
+                const { puuid } = response.data;
+                return puuid;
+            }).catch((err) => {
+                return err.data;
             })
             return res;
         }
     }
-}
+}//https://europe.api.riotgames.com/riot/account/v1/accounts/by-riot-id/mDev/OPE?api_key=RGAPI-78371f68-654c-4d5e-8ab8-de498082c0df
