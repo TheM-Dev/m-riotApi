@@ -106,6 +106,52 @@ module.exports = function(options){
                 return err.data;
             })
             return res;
+        },
+        /**
+         * @name                  regionStatus
+         * @category              VALORANT
+         * @description           Returns an Object with maintenance and incident reports for providen platform.
+         * @author                m.
+         * @param   { String }    region        Specify an region (AP, BR, EU, KR, LATAM, NA) to search for.
+         * 
+         * @returns { Object }
+         */
+        platformStatus: async region => {
+            let url = `https://${region.toLowerCase()}.api.riotgames.com/val/status/v1/platform-data?api_key=${this.apiKey}`;
+            const res = await axios.get(url).then((response) => {
+                let incidents = response.data.incidents;
+                let maintenances = response.data.maintenances;
+                const maintenanceReports = [];
+                const incidentReports = [];
+                Array.from(incidents).forEach(i => {
+                    const { id, platforms, created_at, updates, incident_severity } = i;
+                    const updateReports = [];
+                    Array.from(updates).forEach(u => {
+                        const { id, publish_locations, author, created_at, translations, titles } = u;
+                        let title = ''; let translation = '';
+                        if(translations) Array.from(translations).forEach(trans => { if(trans.locale === 'en_US') return translation = trans.content });
+                        if(titles) Array.from(titles).forEach(title => { if(title.locale === 'en_US') return title = title.content });
+                        updateReports.push({ id, publish_locations, author, created_at, translation, title });
+                    });
+                    incidentReports.push({ id, platforms, created_at, updateReports, incident_severity });
+                });
+                Array.from(maintenances).forEach(i => {
+                    const { id, platforms, created_at, updates, incident_severity } = i;
+                    const updateReports = [];
+                    Array.from(updates).forEach(u => {
+                        const { id, publish_locations, author, created_at, translations, titles } = u;
+                        let title = ''; let translation = '';
+                        if(translations) Array.from(translations).forEach(trans => { if(trans.locale === 'en_US') return translation = trans.content });
+                        if(titles) Array.from(titles).forEach(title => { if(title.locale === 'en_US') return title = title.content });
+                        updateReports.push({ id, publish_locations, author, created_at, translation, title });
+                    });
+                    maintenanceReports.push({ id, platforms, created_at, updateReports, incident_severity });
+                });
+                return { maintenanceReports, incidentReports };
+            }).catch((err) => {
+                return err.data;
+            })
+            return res;
         }
     }
 }
