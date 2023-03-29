@@ -1,13 +1,7 @@
-// Use code style tools (eslint/prettier)
-// You weren;t using translateRegion here.
-// Also it could be a good idea to use Object.freeze() to make it immutable as ur using it as an enum.
-// In TS u could use Enum or Object as const (second is better).
-
 const get = (url) => fetch(url).then(res => res.json()).catch(error => error);
 
 const parseReports = (statusData) => statusData.map(({ id, platforms, created_at, updates, incident_severity }) => {
     const updateReports = updates.map(({ id, publish_locations, author, created_at, translations, titles }) => {
-        // would extract this en_US magic string to some constant
         const isAmericanLocale = ({ locale }) => locale === "en_US";
 
         const translation = translations.find(isAmericanLocale)?.content ?? "";
@@ -31,15 +25,13 @@ module.exports = (apiKey) => {
          * @returns { Object }
          */
         platformStatus: (region) => {
-            // please mind that regions have a " " space character in them. Are they supposed to be used as a part of that URL with spaces?
             const url = `https://${region.toLowerCase()}.api.riotgames.com/lol/status/v4/platform-data?api_key=${apiKey}`;
 
             return get(url)
                 .then(({ incidents, maintenances }) => ({
                     incidentReports: parseReports(incidents),
                     maintenanceReports: parseReports(maintenances),
-                }))
-                .catch(error => error); // todo proper error handling for all of the requests
+                })); // tbh its better to just let it throw than to just silently return errors
         },
         /**
          * @name                  getPuuid
@@ -54,7 +46,7 @@ module.exports = (apiKey) => {
          */
         getPuuid: (gameName, tagLine, region) => {
             const url = `https://${region}.api.riotgames.com/riot/account/v1/accounts/by-riot-id/${gameName}/${tagLine}?api_key=${apiKey}`;
-            return get(url).then(data => data.puuid).catch(error => error);
+            return get(url).then(data => data.puuid);
         },
         /**
          * @name                  championRotations
@@ -65,10 +57,7 @@ module.exports = (apiKey) => {
          * 
          * @returns { Object }
          */
-        championRotations: (region) => {
-            const url = `https://${region}.api.riotgames.com/lol/platform/v3/champion-rotations?api_key=${apiKey}`;
-            return get(url).catch(error => error);
-        }
+        championRotations: (region) => get(`https://${region}.api.riotgames.com/lol/platform/v3/champion-rotations?api_key=${apiKey}`),
     };
 
     const valorant = {
@@ -80,10 +69,7 @@ module.exports = (apiKey) => {
          * 
          * @returns { Object }
          */
-        getContent: () => {
-            const url = `https://eu.api.riotgames.com/val/content/v1/contents?api_key=${apiKey}`;
-            return get(url).then().catch(error => error);
-        },
+        getContent: () => get(`https://eu.api.riotgames.com/val/content/v1/contents?api_key=${apiKey}`),
         /**
          * @name                  regionStatus
          * @category              VALORANT
@@ -93,7 +79,7 @@ module.exports = (apiKey) => {
          * 
          * @returns { Object }
          */
-        platformStatus: region => {
+        platformStatus: (region) => {
             const url = `https://${region.toLowerCase()}.api.riotgames.com/val/status/v1/platform-data?api_key=${apiKey}`;
 
             return get(url)
