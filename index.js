@@ -1,8 +1,20 @@
-const translate = require('./translateRegion');
-const axios = require('axios');
-module.exports = function(options){
-    this.apiKey = options.apiKey;
-    this.lol = {
+const get = (url) => fetch(url).then(res => res.json()).catch(error => error);
+
+const parseReports = (statusData) => statusData.map(({ id, platforms, created_at, updates, incident_severity }) => {
+    const updateReports = updates.map(({ id, publish_locations, author, created_at, translations, titles }) => {
+        const isAmericanLocale = ({ locale }) => locale === "en_US";
+
+        const translation = translations.find(isAmericanLocale)?.content ?? "";
+        const title = titles.find(isAmericanLocale)?.content ?? "";
+
+        return { id, publish_locations, author, created_at, translation, title };
+    });
+
+    return { id, platforms, created_at, updateReports, incident_severity };
+});
+
+module.exports = (apiKey) => {
+    const lol = {
         /**
          * @name                  regionStatus
          * @category              League of Legends
@@ -12,42 +24,14 @@ module.exports = function(options){
          * 
          * @returns { Object }
          */
-        platformStatus: async region => {
-            let url = `https://${region.toLowerCase()}.api.riotgames.com/lol/status/v4/platform-data?api_key=${this.apiKey}`;
-            const res = await axios.get(url).then((response) => {
-                let incidents = response.data.incidents;
-                let maintenances = response.data.maintenances;
-                const maintenanceReports = [];
-                const incidentReports = [];
-                Array.from(incidents).forEach(i => {
-                    const { id, platforms, created_at, updates, incident_severity } = i;
-                    const updateReports = [];
-                    Array.from(updates).forEach(u => {
-                        const { id, publish_locations, author, created_at, translations, titles } = u;
-                        let title = ''; let translation = '';
-                        if(translations) Array.from(translations).forEach(trans => { if(trans.locale === 'en_US') return translation = trans.content });
-                        if(titles) Array.from(titles).forEach(title => { if(title.locale === 'en_US') return title = title.content });
-                        updateReports.push({ id, publish_locations, author, created_at, translation, title });
-                    });
-                    incidentReports.push({ id, platforms, created_at, updateReports, incident_severity });
-                });
-                Array.from(maintenances).forEach(i => {
-                    const { id, platforms, created_at, updates, incident_severity } = i;
-                    const updateReports = [];
-                    Array.from(updates).forEach(u => {
-                        const { id, publish_locations, author, created_at, translations, titles } = u;
-                        let title = ''; let translation = '';
-                        if(translations) Array.from(translations).forEach(trans => { if(trans.locale === 'en_US') return translation = trans.content });
-                        if(titles) Array.from(titles).forEach(title => { if(title.locale === 'en_US') return title = title.content });
-                        updateReports.push({ id, publish_locations, author, created_at, translation, title });
-                    });
-                    maintenanceReports.push({ id, platforms, created_at, updateReports, incident_severity });
-                });
-                return { maintenanceReports, incidentReports };
-            }).catch((err) => {
-                return err.data;
-            })
-            return res;
+        platformStatus: (region) => {
+            const url = `https://${region.toLowerCase()}.api.riotgames.com/lol/status/v4/platform-data?api_key=${apiKey}`;
+
+            return get(url)
+                .then(({ incidents, maintenances }) => ({
+                    incidentReports: parseReports(incidents),
+                    maintenanceReports: parseReports(maintenances),
+                })); // tbh its better to just let it throw than to just silently return errors
         },
         /**
          * @name                  getPuuid
@@ -60,15 +44,9 @@ module.exports = function(options){
          * 
          * @returns { String }
          */
-        getPuuid: async (gameName, tagLine, region) => {
-            let url = `https://${region}.api.riotgames.com/riot/account/v1/accounts/by-riot-id/${gameName}/${tagLine}?api_key=${this.apiKey}`;
-            const res = await axios.get(url).then((response) => {
-                const { puuid } = response.data;
-                return puuid;
-            }).catch((err) => {
-                return err.data;
-            })
-            return res;
+        getPuuid: (gameName, tagLine, region) => {
+            const url = `https://${region}.api.riotgames.com/riot/account/v1/accounts/by-riot-id/${gameName}/${tagLine}?api_key=${apiKey}`;
+            return get(url).then(data => data.puuid);
         },
         /**
          * @name                  championRotations
@@ -79,17 +57,10 @@ module.exports = function(options){
          * 
          * @returns { Object }
          */
-        championRotations: async (region) => {
-            let url = `https://${region}.api.riotgames.com/lol/platform/v3/champion-rotations?api_key=${this.apiKey}`;
-            const res = await axios.get(url).then((response) => {
-                return response.data;
-            }).catch((err) => {
-                return err.data;
-            })
-            return res;
-        }
-    }
-    this.valorant = {
+        championRotations: (region) => get(`https://${region}.api.riotgames.com/lol/platform/v3/champion-rotations?api_key=${apiKey}`),
+    };
+
+    const valorant = {
         /**
          * @name                  getContent
          * @category              Valorant
@@ -98,15 +69,7 @@ module.exports = function(options){
          * 
          * @returns { Object }
          */
-        getContent: async () => {
-            let url = `https://eu.api.riotgames.com/val/content/v1/contents?api_key=${this.apiKey}`;
-            const res = await axios.get(url).then((response) => {
-                return response.data;
-            }).catch((err) => {
-                return err.data;
-            })
-            return res;
-        },
+        getContent: () => get(`https://eu.api.riotgames.com/val/content/v1/contents?api_key=${apiKey}`),
         /**
          * @name                  regionStatus
          * @category              VALORANT
@@ -116,42 +79,17 @@ module.exports = function(options){
          * 
          * @returns { Object }
          */
-        platformStatus: async region => {
-            let url = `https://${region.toLowerCase()}.api.riotgames.com/val/status/v1/platform-data?api_key=${this.apiKey}`;
-            const res = await axios.get(url).then((response) => {
-                let incidents = response.data.incidents;
-                let maintenances = response.data.maintenances;
-                const maintenanceReports = [];
-                const incidentReports = [];
-                Array.from(incidents).forEach(i => {
-                    const { id, platforms, created_at, updates, incident_severity } = i;
-                    const updateReports = [];
-                    Array.from(updates).forEach(u => {
-                        const { id, publish_locations, author, created_at, translations, titles } = u;
-                        let title = ''; let translation = '';
-                        if(translations) Array.from(translations).forEach(trans => { if(trans.locale === 'en_US') return translation = trans.content });
-                        if(titles) Array.from(titles).forEach(title => { if(title.locale === 'en_US') return title = title.content });
-                        updateReports.push({ id, publish_locations, author, created_at, translation, title });
-                    });
-                    incidentReports.push({ id, platforms, created_at, updateReports, incident_severity });
-                });
-                Array.from(maintenances).forEach(i => {
-                    const { id, platforms, created_at, updates, incident_severity } = i;
-                    const updateReports = [];
-                    Array.from(updates).forEach(u => {
-                        const { id, publish_locations, author, created_at, translations, titles } = u;
-                        let title = ''; let translation = '';
-                        if(translations) Array.from(translations).forEach(trans => { if(trans.locale === 'en_US') return translation = trans.content });
-                        if(titles) Array.from(titles).forEach(title => { if(title.locale === 'en_US') return title = title.content });
-                        updateReports.push({ id, publish_locations, author, created_at, translation, title });
-                    });
-                    maintenanceReports.push({ id, platforms, created_at, updateReports, incident_severity });
-                });
-                return { maintenanceReports, incidentReports };
-            }).catch((err) => {
-                return err.data;
-            })
-            return res;
+        platformStatus: (region) => {
+            const url = `https://${region.toLowerCase()}.api.riotgames.com/val/status/v1/platform-data?api_key=${apiKey}`;
+
+            return get(url)
+                .then(({ incidents, maintenances }) => ({
+                    incidentReports: parseReports(incidents),
+                    maintenanceReports: parseReports(maintenances),
+                }))
+                .catch(error => error);
         }
-    }
-}
+    };
+
+    return { lol, valorant };
+};
